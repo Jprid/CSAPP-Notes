@@ -1,0 +1,277 @@
+#CSAPP Review Notes:
+
+## Checking if two files differ (c):
+[SOLUTION](##SOLUTION:-Checking-if-two-files-differ-(c):)
+
+## refill_buffer
+__Given a file descriptor for an open file, a buffer, and the size of the buffer, fill the buffer from the file (reading only once from the file) and return the result of reading the file. Use the skeleton code below:__
+
+## SOLUTION: Checking if two files differ (c):
+
+		// these are macro/header functions --> not especially important to memorize
+		#include <stdio.h>
+		#include <sys/types.h>
+		#include <sys/stat.h>
+		#include <fcntl.h>
+		#include <unistd.h>
+
+		#define BUFFER_SIZE 4096
+		// end preprocessor directives
+
+		int main(int argc, char * argv[])
+		{
+			if (argc != 3)
+				return usage (argv[0]);
+		}
+		// opening file 1
+		int fd1 = open(argv[1], O_RDONLY);
+		// opening file 2
+		int fd2 = open(argv[2], O_RDONLY);
+		// check that both files properly opened
+		// if either fd variable is -1 --> indicates error during opening
+		if (fd1 == -1 || fd2 == -1){
+			fprintf(stderr, "something went wrong while opening");
+			return -1;
+		}
+		// instantiate variables for reading from fd1 and fd2
+		ssize_t n1, n2;
+		char buff1[BUFFER_SIZE];
+		char buff2[BUFFER_SIZE];
+		do{
+			n1 = read(fd1, buff1, BUFF_SIZE);
+			n2 = read(fd2, buff2, BUFF_SIZE);
+			if( n1 == -1 || n2 == -1){
+				fprintf(stderr, "something bad happened");
+				return -1;
+			}
+			// 
+			if (n1 != n2){
+				printf("files differ");
+				return 1;
+			}
+			// iterate through buffers, 
+			// checking buff1[i] vs buff2[i]
+			int i;
+			for(i = 0; i < n1;  i++){
+				if (buff1[i] != buff2[i]){
+					printf("files differ");
+					return 1;
+				}
+			} while( n1 != 0 && n2 != 0);
+			// ensure files closed
+			if (close(fd1) == -1 || close(fd1) == -1){
+				fprintf(stderr, "something wrong while closing");
+				return -1;
+			}
+			printf("identical files");
+			return 0;
+		}
+
+## SOLUTION: refill_buffer
+__Given a file descriptor for an open file, a buffer, and the size of the buffer, fill the buffer from the file (reading only once from the file) and return the result of reading the file. Use the skeleton code below:__
+
+		int refill_buffer( int fd, char buffer[], int buffer_size) {
+			ssize_t n1 = read(fd, buffer, buffer_size);
+			if ( n1 < 0 ){
+				fprintf(stderr, "something bad happened");
+				return -1;
+			}
+			return n1;
+		}
+
+## verbose refill_buffer
+		
+## Linking
+
+a. using gcc compiler link foo.c, bar.c, and cats.c
+
+		gcc foo.c bar.c cats.c
+
+b. assuming foo.c uses libc.a, bar.c uses libmath.a, and cats.c uses libc.a;
+	link them with gcc into an executable
+
+		gcc foo.c bar.c cats.c libc.a libmath.a
+
+## Linking Notes:
+
+Types of symbols:
+> Global   --> defined in module m but can be accessed from any module 
+
+
+> External --> referenced by module me but defined in another module
+
+> Local    --> defined and referenced exclusively in module m
+
+Symbols can be __Strong__ || __Weak__:
+* Strong symbols include procedures (fxns) and initalized global vals
+* Weak symbols include uninitialized global vals
+
+####Linker rules for Strong/Weak symbols:
+
+* RULE 1: can't have multiple strong symbols named the same thing
+* RULE 2: Strong symbol gets used if Strong and Weak symbol share same name
+* RULE 3: if 1+ weak symbols share same name, select one arbitrarily
+
+## linking problems
+
+		// main.c
+		int cats();
+
+		int foo() {
+			return 0;
+		}
+
+		int main() {
+			if ( cats() )
+				return foo();
+		}
+		// helper.c
+		int foo() {
+			return 1;
+		}
+
+		int cats() {
+			if ( test() )
+				return 1;
+			else
+				return 0;
+		}
+what happens when you try to create an executable object from these two files (main.c and helper.c)?
+> it will throw an error because cats is a strong symbol in both files
+
+## Coalesce
+> Below is the skeleton of a function named coalesce(), which combines adjacent free blocks when an allocated block is freed
+> You may use the macros below.
+
+		#define WSIZE 4
+		#define DSIZE 8
+		#define GET(p) (*(unsigned int *) (p))
+		#define PUT(p, val) (*(unsigned int *)(p) = (val))
+		#define GET_SIZE(p) (GET(p) & ~0x7)
+		#define GET_ALLOC(p) (GETP(p) & 0x1)
+		#define NEXT_BLKP(bp)  ((char *)(bp) + GET_SIZE(((char *)(bp) - WSIZE)))
+		#define PREV_BLKP(bp)  ((char *)(bp) - GET_SIZE(((char *)(bp) - DSIZE)))
+		#define HDRP(bp)	((char *)(bp) - WSIZE)
+		#define FTRP(bp)	((char *)(bp) + GET_SIZE(HDRP(bp)) - DSIZE)
+		#define NEXT_PTR(bp)  (*(char**)(bp))
+		#define PREV_PTR(bp)  (*((char**)(bp) + 1))
+		#define SET_NEXT_PTR(bp, val)  (*(char**)(bp)= (char*)(val))
+		#define SET_PREV_PTR(bp, val)  (*((char**)(bp) + 1)= (char *)(val))
+
+		void coalesce( char * bp){
+			__ssize_t next__ = GET_ALLOC(HDRP(NEXT_BLKP(bp)));
+			__ssize_t prev__ = GET_ALLOC(HDRP(PREV_BLKP(bp));
+			__ssize_t size__ = GET_SIZE(HDRP(bp));
+			// case 1 both are allocated
+			if (prev && next){
+				return bp;
+			} else if (!prev && next){
+				// case 2 prev is free
+				size += GET_SIZE(HDRP(PREV_PTR(bp));
+				PUT(FTRP(bp), PACK(size, 0));
+				PUT(HDRP(PREV_PTR(bp)), PACK(size , 0));
+			} else if (prev && !next){
+				// case 3 next is free
+				size += GET_SIZE(HRDP(NEXT_PTR(bp));
+				PUT(HDRP(bp), PACK(size, 0));
+				PUT(FTRP(bp), PACK(size, 0));
+			} else if (!prev && !next){
+				// case 4 both are free 
+				// add next and prev's size to each other
+				size += GET_SIZE(HDRP(NEXT_PTR(bp))) + GET_SIZE(HDRP(PREV_PTR(bp)));
+				PUT(HRDP(PREV_PTR(bp), PACK(size, 0)));
+				PUT(FTRP(NEXT_PRT(bp), PACK(size, 0)));
+			}
+		}
+
+
+## remove free block
+
+>Below is the skeleton of a function named removeFreeBlock(), which removes a free block from a double linked free block list. You must complete the function, writing code and brief commentsthat explain the purpose of your code. Specifically, the function must reset the relevant previous and next pointers of the affected blocks
+
+> a. assume the system is 32-bit __(use char * pointer)__
+> b. The free list is implemented as a simple double linked list.
+> c. A global scalar named "head", of type "void *", points to the first block in the free list.
+> 
+> d. Each free block begins with the following data:
+> 
+> * one word header
+> * pointer to next free block (see NEXT_PTR macro, below)
+> * pointer to previous free block (see PREV_PTR macro, below)
+> 
+> e. Each block ends with a one word footer.
+> 
+> f. If a pointer does not contain a valid address, it must contain the value NULL.
+> 
+> g. You may set the PREV_PTR of the first free block to the head, but it is
+> 	unnecessary; instead, you may set it to NULL.
+> 
+> h. You may use the macros below.
+> 
+> i. NOTE: Comments and code count equally!
+
+		#define NEXT_PTR(bp)  (*(char**)(bp))
+		#define PREV_PTR(bp)  (*((char**)(bp) + 1))\
+		#define SET_NEXT_PTR(bp, val)  (*(char**)(bp)= (char*)(val))
+		#define SET_PREV_PTR(bp, val)  (*((char**)(bp) + 1)= (char *)(val))
+		void removeFreeBlock( char * bp ){
+			// THIS FUNCTION DOES NOT REQUIRE MUCH CODE;
+			// I'VE LEFT ROOM FOR COMMENTS	
+			char *prev = PREV_PTR(bp);
+			char *next = NEXT_PTR(bp);
+			// if next != null, set PREV(next) to prev 
+			if ( next) SET_PREV_PTR(next, prev);
+			// if prev != null, set NEXT_PTR(prev) to next
+			if ( prev) SET_NEXT_PTR(prev, next);  
+			else  head = next; // otherwise, set next block to start of free list
+		
+
+## malloc logic
+
+__Write the logic of the malloc() function, specified as follows:__
+
+	a. Using only statements from the list below, construct the algorithm used by
+	malloc().
+	b. The algorithm must be written vertically, as if it were lines of code.
+	c. Indent statements that are conditional, i.e., that follow an "if"test.
+	d. You can add "else" statements, if you wish. Statements that follow "else"
+	must also be indented.
+	e. The statement, "search for a free block"returns a free block ifa sufficiently
+	large free block is found in the heap's free list; otherwise, it returns NULL.
+	f. Assume that the statement, "obtain block by increasing size of heap"
+	alwaysreturns a free block.
+	g. You can copy statements whole or simply use their associated letters.
+	h. Note: Not all statements below are included in the algorithm. 
+	You must choose the necessary statements.
+
+__Statements List:__
+NOTE: not all statements are necessary
+
+	a. if no sufficiently large free block is found
+	b. coalesce block with next block
+	c. search for a free block
+	d. obtain block by increasing size of heap
+	e. adjust request size
+	f. if size of block exceeds requested size by a certain amount
+	g. copy old block to new block
+	h. split the block
+	i. return payload address
+	j. remove block from free list
+	k. if request is not aligned on an 8-byte boundary 
+	l. add block to free list
+
+__Write the logic below:__
+
+Solution: (tentative)
+
+	k. if request is not aligned on an 8-byte boundary
+		e. adjust request size	
+	c. search for a free block
+	a. if no sufficiently large free block is found
+		b. coalesce
+	f. if size of block exceeds requested size by a certain amount
+		d. obtain block by increasing size of heap
+		h. split the block
+	j. remove block from free list
+	i. return payload address
+
