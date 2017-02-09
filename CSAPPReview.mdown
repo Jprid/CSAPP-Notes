@@ -1,8 +1,5 @@
 #CSAPP Review Notes:
 
-## Checking if two files differ (c):
-[SOLUTION](##SOLUTION:-Checking-if-two-files-differ-(c):)
-
 ## refill_buffer
 __Given a file descriptor for an open file, a buffer, and the size of the buffer, fill the buffer from the file (reading only once from the file) and return the result of reading the file. Use the skeleton code below:__
 
@@ -54,7 +51,7 @@ __Given a file descriptor for an open file, a buffer, and the size of the buffer
 			int i;
 			for(i = 0; i < n1;  i++){
 				if (buff1[i] != buff2[i]){
-					printf("files differ");
+					printf("files are different");
 					return 1;
 				}
 			} while( n1 != 0 && n2 != 0);
@@ -117,7 +114,7 @@ Symbols can be __Strong__ || __Weak__:
 		// main.c
 		int cats();
 
-		int foo() {
+		int foo() { // 
 			return 0;
 		}
 
