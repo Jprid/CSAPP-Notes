@@ -3,6 +3,7 @@ Problems taken from CSAPP book 2nd edition
 John Pridmore
 
 
+
 # TOPICS:
 * exam is cumulative
 * storage tech
@@ -27,6 +28,10 @@ John Pridmore
   * virtual memory homework
   * threading homework
 
+
+[Exceptions Solutions](#Exceptions HW Solutions)
+
+
 ## Malloc Practice (9.6):
 
 Determine the block sizes and header values that would result from the following sequence ofmallocrequests.
@@ -40,6 +45,14 @@ malloc(1)  |                         |
 malloc(5)  |                         |
 malloc(12) |                         |
 malloc(13) |                         |
+
+## Threading:
+
+__each thread needs a separate call stack__
+
+__==> threads do not share state__
+
+calls and returns in separate threads are independent
 
 ## Threading Homework:
 * 12.16, p. 1031
@@ -103,9 +116,9 @@ The functions in the Rio I/O package (Section 10.4) are thread-safe. Are they re
 ## Virtual Memory Homework:
 Note: Virtual Addresses are 14bits & Physical Addresses are 12bits
 
-![Sample memory system used for following Qs](/samplemem.PNG)
+![Sample memory system used for following Qs](samplemem.PNG)
 
-![Mem system cache table](/samplememcache.PNG)
+![Mem system cache table](samplememcache.PNG)
 
 
 Index |13| 12 | 11 | 10 | 9 | 8 | 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0
@@ -142,12 +155,8 @@ Bits  |0|0|0|0|0|0|0|0|0|0|0|0|0|0
  */
 
 ---
+
 ## Exceptions:
-
-
-
-
-
 
 * 8.10, p. 788
 
@@ -198,6 +207,8 @@ int main()
 }
 /* $end forkprob7 */
 ```
+
+## <a name="Exceptions HW Solutions"></a>Exceptions HW Solutions:
 
 * 8.23, p. 793
 
@@ -307,11 +318,10 @@ malloc(12) |(12 + 4 = 16) ==> __16__ | (16 ==> 0x10) + 1 (valid storage) = 0x11
 
 * 12.17, p. 1031:
   * a. because the thread is never joined so the thread routine is never run
-  * b. pthread_join(tid, NULL);
+  * b. pthread_join(tid, NULL); or pthread_exit
 
 * 12.24, p. 1032:
-  * if the buffers passed to each call (of RIO) are separate, then the functions
-  * are reentrant ()
+  * if the buffers passed to each call (of RIO) are separate, then the functions are reentrant
 
 
 ## Virtual Memory HW Solutions:
@@ -385,7 +395,7 @@ int main(){
 }
 ```
 
-## Exceptions HW Solutions:
+## <a name="Exceptions HW Solutions"></a>Exceptions Solutions:
 
 ### NOTES:
 
@@ -404,27 +414,20 @@ int main(){
 * execve
   * loads and executes programs
   * __overwrites current code, data, and stack__
-  *
+  * __called once, (normally) never returns__
+
   ```C
   #include <unistd.h>
-  int execve(const char *filename, char *const argv[],
-  char *const envp[]);
+  int execve(const char *filename, char *const argv[], char *const envp[]);
   ```
 
-  * __called once, never returns__
-  *
-
 * setjmp
-  *
 
   ```C
   #include <setjmp.h>
   int setjmp(jmp_buf env);
   int sigsetjmp(sigjmp_buf env, int savesigs);
   ```
-
-
-
 
 * longjmp
   *
@@ -437,6 +440,8 @@ int main(){
     * longjmp
     * execve
     * fork
+
+---
 
 
  * Match each function with one of the following behaviors:
