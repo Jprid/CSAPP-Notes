@@ -5,7 +5,6 @@ John Pridmore
 
 
 # TOPICS:
-* exam is cumulative
 * storage tech
 * memory hierarchy
 * cache memories
@@ -57,9 +56,10 @@ calls and returns in separate threads are independent
 ## Threading Homework:
 * 12.16, p. 1031
 
-  write a version of hello.c (See example) that creates and reaps n joinable peer threads, where n is a command line argument
+<summary>
+write a version of hello.c (See example) that creates and reaps n joinable peer threads, where n is a command line argument
   hello.c:
-
+<details>
   ```C
   // #include "csapp.h"
   void* thread(void* vargp);
@@ -76,6 +76,8 @@ calls and returns in separate threads are independent
       return NULL;
     }
   ```
+</details>
+</summary>
 
 ---
 
